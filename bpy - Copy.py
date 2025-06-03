@@ -14,11 +14,26 @@ import os
 
 #bookmark adder function
 
+#ADD FILE CHECKER
+loc = ''
+
+addons_dir = bpy.utils.user_resource('SCRIPTS', path="addons")
+if os.path.isfile(addons_dir+'\Bookmarks.txt'):
+    print("File exists!")
+else:
+    print("File does not exist.")
+    with open(addons_dir+"\Bookmarks.txt", "w") as f:
+        pass
+
+loc = addons_dir+'\Bookmarks.txt'  
+
 L = []
 
 link = "http://www.blender.org"
 
 global_search = ''
+
+
 
 
 class H(bpy.types.Panel):
@@ -27,6 +42,14 @@ class H(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Do it'
+    
+    def readfile(f):
+        list1 = []
+        with open(f,'r') as file:
+            for line in file:
+                list1.append(line)
+        
+        return list1
 
     def draw(self, context):
         
@@ -34,34 +57,48 @@ class H(bpy.types.Panel):
         
         
         layout = self.layout
+        
+        b = layout.box()
+        b.label(text = "Online",icon  = "STRIP_COLOR_02")
+        
         col = layout.column()
         
         
-        op = col.operator('wm.url_open', text="blender.org")
+        op = b.operator('wm.url_open', text="blender.org")
         op.url = link
         
         
-        layout = self.layout
-        layout.operator("wm.my_popup", text="Google!")
+        b.operator("wm.my_popup", text="Google!")
         
-        
-        splash_box = layout.box()
-        splash_box.label(text="Splash!",icon  = "INFO")
-        splash_box.operator("wm.splash")
-        splash_box.label(text="Bookmarks in development, coming soon!!")
-        splash_box.operator("google.search_button")
-        
+        c = layout.box()
+        c.label(text="Your Bookmarks",icon  = "STRIP_COLOR_01")
         
         row = layout.row()
         col = layout.column()
+        
         row.scale_y = 2
         row.scale_x = 0.5
-        row.operator("wm.dropdown_example")
-        col.operator("my_popup.bookmark",text= "+Bookmark")
-        col.scale_x = -0.5
+        
+        c.operator("show.msg")
+        
+        global loc
+        o = H.readfile(loc)
+        
+        
+        for i in o:
+            c.operator("wm.splash", text=f"{i}")
+        
+        
+        c.operator("my_popup.bookmark",text= "+Bookmark")
+        
     
         
-        
+class MSG(bpy.types.Operator):
+    bl_idname = "show.msg"
+    bl_label = "----Bookmarks----"
+    def execute(self, context):
+        self.report({'INFO'}, f"Click button to open website")
+        return {'FINISHED'}
         
 class MyPopupOperator(bpy.types.Operator):
     bl_idname = "wm.my_popup"
@@ -69,7 +106,10 @@ class MyPopupOperator(bpy.types.Operator):
 
     my_string: bpy.props.StringProperty(name="Search here")
     my_toggle: bpy.props.BoolProperty(name="nvm")
-
+    
+    
+        
+    
     def execute(self, context):
         global global_search
         self.report({'INFO'}, f"You typed: {self.my_string}, Checked: {self.my_toggle}")
@@ -94,7 +134,7 @@ class MyPopupOperator(bpy.types.Operator):
         
 class Dropdown(bpy.types.Operator):
     bl_idname = "wm.dropdown_example"
-    bl_label = "Bookmarks"
+    bl_label = "--Bookmarks--"
 
     # Define the dropdown (enum) property
     my_options: bpy.props.EnumProperty(
@@ -144,12 +184,11 @@ class PopBookmark(bpy.types.Operator):
         global L 
         
         L.append(B)
-        addons_dir = bpy.utils.user_resource('SCRIPTS', path="addons")
         
-        DATA_PATH = addons_dir+'\Bookmarks.txt'
-
+        
+        global loc
     
-        with open(DATA_PATH, "w") as file:
+        with open(loc, "a") as file:
             file.write(str(B))
             file.write('\n')
         
@@ -189,7 +228,7 @@ class PopBookmark(bpy.types.Operator):
 
 
 # Register both classes
-classes = [H,MyPopupOperator,Dropdown,AddBookmark,PopBookmark]
+classes = [H,MyPopupOperator,Dropdown,AddBookmark,PopBookmark,MSG]
 
 def register():
     for cls in classes:
