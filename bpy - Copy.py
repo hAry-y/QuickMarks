@@ -61,7 +61,7 @@ class H(bpy.types.Panel):
         layout = self.layout
         
         b = layout.box()
-        b.label(text = "Online",icon  = "STRIP_COLOR_02")
+        b.label(text = "Online",icon  = "NONE")
         
         col = layout.column()
         
@@ -73,7 +73,7 @@ class H(bpy.types.Panel):
         b.operator("wm.my_popup", text="Google!")
         
         c = layout.box()
-        c.label(text="Your Bookmarks",icon  = "STRIP_COLOR_01")
+        c.label(text="Your Bookmarks",icon  = "BLENDER")
         
         row = layout.row()
         col = layout.column()
