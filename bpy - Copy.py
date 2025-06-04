@@ -12,6 +12,7 @@ import bpy
 import webbrowser
 import os
 
+
 #bookmark adder function
 
 #ADD FILE CHECKER
@@ -36,6 +37,7 @@ global_search = ''
 L = []
 
 class H(bpy.types.Panel):
+    """ open link"""
     bl_label = "TOOLS"
     bl_idname = "VIEW3D_PT_again_and_again1"
     bl_space_type = 'VIEW_3D'
@@ -83,17 +85,20 @@ class H(bpy.types.Panel):
         
         global loc
         o = H.readfile(loc)
-        
-        
         for i in o:
             spl = i.split(',')
-            c.operator("open.link", text=f"{spl[0]}").button_id = spl[0]
-        
+            c.operator("open.link", text=f"{spl[0]}",icon='WORLD').button_id = spl[0]
         
         c.operator("my_popup.bookmark",text= "+Bookmark")
         
+        new = layout.box()
+        rowu = new.row()
+        rowu.operator("button.button",text = "Feature")
+        rowu.scale_y = 2
+        
 
 class OPEN_LINK(bpy.types.Operator):
+    """ Opens this bookmark link in your default browser!"""
     bl_idname = "open.link"
     bl_label = "----links----" 
     button_id: bpy.props.StringProperty(name="Button ID") 
@@ -108,7 +113,10 @@ class OPEN_LINK(bpy.types.Operator):
             spl = i.split(',')
             if spl[0] == self.button_id:
                 linkk = spl[1]
-                webbrowser.open(linkk)
+                if not linkk.startswith(("http://", "https://")):
+                    linkk = "https://" + linkk
+                #webbrowser.get("chromium")
+                webbrowser.open_new_tab(linkk)
         
             
         
@@ -244,22 +252,17 @@ class PopBookmark(bpy.types.Operator):
         
         layout.prop(self, "my_toggle")
         
-        
-
-
-# Your new operator
-#class SEARCH(bpy.types.Operator):
-#    bl_idname = "google.search_button"
-#    bl_label = "web search"
-#
-#    def execute(self, context):
-#        self.report({'INFO'}, "OPEN CHROME!")
-#        print("You can start coding your function here.")
-#        return {'FINISHED'}
-
+class My_Button(bpy.types.Operator):
+    bl_idname = "button.button"
+    bl_label = "experiment"
+    
+    def execute(self, context):
+        self.report({'INFO'}, "DEV BUTTON!")
+        return {'FINISHED'}
 
 # Register both classes
-classes = [H,MyPopupOperator,Dropdown,AddBookmark,PopBookmark,MSG,OPEN_LINK]
+classes = [H,MyPopupOperator,Dropdown,AddBookmark,
+PopBookmark,MSG,OPEN_LINK,My_Button]
 
 def register():
     for cls in classes:
