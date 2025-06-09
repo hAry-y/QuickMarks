@@ -9,15 +9,21 @@ bl_info = {
 }
 
 import bpy
+import json
 import webbrowser
 import os
+from bpy.types import Menu
+
+
 
 
 #bookmark adder function
 
 #ADD FILE CHECKER
 loc = ''
+loc2=''
 
+#ADD KEYWORDS FILE
 addons_dir = bpy.utils.user_resource('SCRIPTS', path="addons")
 if os.path.isfile(addons_dir+'\Bookmarks.txt'):
     print("File exists!")
@@ -26,7 +32,21 @@ else:
     with open(addons_dir+"\Bookmarks.txt", "w") as f:
         pass
 
+
+#ADD MODIFIER FILE   
+if os.path.isfile(addons_dir+'\Modifiers.json'):
+    print("File exists!")
+else:
+    if os.path.exists(addons_dir+'\Modifiers.json') and os.path.getsize(addons_dir+'\Modifiers.json') > 0:
+        with open(addons_dir+"\Modifiers.json", "w") as f:
+            json.dump([], f, indent=4)
+            
+    else:
+        pass
+        
+
 loc = addons_dir+'\Bookmarks.txt'  
+loc2 = addons_dir+'\Modifiers.json'  
 
 
 
@@ -35,6 +55,7 @@ global_search = ''
 
 
 L = []
+modi = []
 
 class H(bpy.types.Panel):
     """ open link"""
@@ -60,6 +81,7 @@ class H(bpy.types.Panel):
         
         layout = self.layout
         
+        
         b = layout.box()
         b.label(text = "Online",icon  = "NONE")
         
@@ -81,7 +103,7 @@ class H(bpy.types.Panel):
         row.scale_y = 2
         row.scale_x = 0.5
         
-        c.operator("show.msg")
+        #c.operator("show.msg")
         
         global loc
         o = H.readfile(loc)
@@ -92,9 +114,27 @@ class H(bpy.types.Panel):
         c.operator("my_popup.bookmark",text= "+Bookmark")
         
         new = layout.box()
-        rowu = new.row()
-        rowu.operator("button.button",text = "Feature")
-        rowu.scale_y = 2
+        
+        
+        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
+            with open(loc2,"r") as file:
+                    red = json.load(file)
+
+                    if red:
+                        
+                        for i in red["modL"]:
+                            layout.operator("modifier.apply",text =str(i)).button_id = str(i)
+                        
+        new.operator("modifier.pack",text = "RECORD MODIFIER PACK")
+        
+        
+        layout.use_property_decorate = True
+        
+        #bb = layout.operator("wm.splash", text  = "splash")
+        #
+        #bb.ui_text_color = (0, 1, 0, 1)
+        
+        #layout.operator("wm.call_pie_menu", text="Open Pie Menu")
         
 
 class OPEN_LINK(bpy.types.Operator):
@@ -125,9 +165,9 @@ class OPEN_LINK(bpy.types.Operator):
         
 class MSG(bpy.types.Operator):
     bl_idname = "show.msg"
-    bl_label = "----Bookmarks----"
+    bl_label = "print_message"
     def execute(self, context):
-        self.report({'INFO'}, f"Click button to open website")
+        self.report({'INFO'}, f"lol")
         return {'FINISHED'}
         
 class MyPopupOperator(bpy.types.Operator):
@@ -252,17 +292,137 @@ class PopBookmark(bpy.types.Operator):
         
         layout.prop(self, "my_toggle")
         
-class My_Button(bpy.types.Operator):
-    bl_idname = "button.button"
+class Loop_cut(bpy.types.Operator):
+    bl_idname = "loop.cut"
     bl_label = "experiment"
     
     def execute(self, context):
+        
+        obj = bpy.context.active_object
+        if obj and obj.type == 'MESH':
+            bpy.ops.object.mode_set(mode='EDIT')
+        
+            override = bpy.context.copy()
+            for area in bpy.context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    override['area'] = area
+                    override['region'] = area.regions[-1]
+                    override['space_data'] = area.spaces.active
+                    break
+    
+    # Set the mesh selection mode to edge mode explicitly
+            bpy.ops.mesh.select_mode(use_extend=False, use_expand=False, type='EDGE')
+
+            bpy.ops.mesh.loopcut_slide('INVOKE_DEFAULT')
+
+        
         self.report({'INFO'}, "DEV BUTTON!")
         return {'FINISHED'}
+    
+class Modifier(bpy.types.Operator):
+    bl_idname = "modifier.pack"
+    bl_label = "modifier"
+    
+    global loc2
+    def execute(self, context):
+        result = ''
+        ml = []
+        
+        global modi, loc2
+        obj = bpy.context.active_object
+        if obj and obj.modifiers:
+            for mod in obj.modifiers:
+                
+                l1 = []
+                
+                dic = {"modL":[]}
+                result = str(mod).split('"')[1]
+                modi.append(result)
+                
+                
+                self.report({'INFO'}, f"{result}")
+                
+                
+                
+                ml.append(result)
+                
+                
+                
+        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
+            with open(loc2, "r") as f:
+                dict = json.load(f)
+                dict["modL"].append(ml)
+            with open(loc2,"w") as f2:
+                json.dump(dict,f2,indent=4)
+                
+        else:
+            with open(loc2, "w") as f:
+                dict = {"modL":[ml]}
+                json.dump(dict,f,indent=4)
 
+        
+            
+
+
+        return {'FINISHED'}
+    
+class apply(bpy.types.Operator):
+    global modi,loc2
+    bl_idname = "modifier.apply"
+    bl_label = "modifier"
+    button_id: bpy.props.StringProperty(name="Button ID")
+    
+    
+    def execute(self, context):
+        modifier_dict = {
+    "Subdivision": "SUBSURF",
+    "Bevel": "BEVEL",
+    "Mirror": "MIRROR",
+    "Solidify": "SOLIDIFY",
+    "Array": "ARRAY",
+    "Boolean": "BOOLEAN",
+    "Displace": "DISPLACE",
+    "Shrinkwrap": "SHRINKWRAP",
+    "SimpleDeform": "SIMPLE_DEFORM",
+    "Lattice": "LATTICE",
+    "Cast": "CAST",
+    "Wave": "WAVE",
+    "Build": "BUILD",
+    "Decimate": "DECIMATE",
+    "EdgeSplit": "EDGE_SPLIT",
+    "Skin": "SKIN",
+    "Triangulate": "TRIANGULATE",
+    "Weld": "WELD",
+    "Remesh": "REMESH",
+    "Multiresolution": "MULTIRES",
+    "Screw": "SCREW",
+    "MeshSequenceCache": "MESH_SEQUENCE_CACHE",
+    "DataTransfer": "DATA_TRANSFER",
+    "NormalEdit": "NORMAL_EDIT",
+    "WeightProximity": "WEIGHT_PROXIMITY",
+    "VertexWeightEdit": "VERTEX_WEIGHT_EDIT"
+}
+        
+        obj = bpy.context.active_object
+        
+        
+        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
+            with open(loc2,"r") as file:
+                    r = json.load(file)
+            if obj:
+                for i in r["modL"]:
+                    if str(i) == self.button_id:
+                        for j in i:
+                            s = obj.modifiers.new(name=j,type = modifier_dict[j])
+            #modi = []
+
+
+        return {'FINISHED'}
+    
+    
 # Register both classes
 classes = [H,MyPopupOperator,Dropdown,AddBookmark,
-PopBookmark,MSG,OPEN_LINK,My_Button]
+PopBookmark,MSG,OPEN_LINK,Loop_cut,Modifier,apply]
 
 def register():
     for cls in classes:
