@@ -170,7 +170,10 @@ class H(bpy.types.Panel):
                     if red:
                         
                         for i in red["modL"]:
-                            layout.operator("modifier.apply",text =str(i)).button_id = str(i)
+                            if context.scene.my_checkbox:
+                                new.operator("delete.mod",text =str(i)).button_id = str(i)
+                            else:
+                                new.operator("modifier.apply",text =str(i)).button_id = str(i)
                         
         
         
@@ -392,6 +395,50 @@ class ConfirmDelete(bpy.types.Operator):
         layout = self.layout
         layout.label(text=f"{ConfirmDelete.bookname}")
         
+
+class DeleteMod(bpy.types.Operator):
+    
+    button_id: bpy.props.StringProperty(name="Button ID")
+    bl_idname = "delete.mod"
+    bl_label = "confirm delete modifier!"
+    
+    bookname = 'Confirm Delete This Modifier group?'
+    
+    confirm: bpy.props.BoolProperty(name="Confirm delete this Modifier")
+
+    def delete_confirmmod(self):
+        
+        
+        global loc2,Delete_Toggle
+        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
+            with open(loc2, "r") as f:
+                dict = json.load(f)
+                for i in dict['modL']:
+                    
+                    if str(i) == self.button_id:
+                        dict['modL'].remove(i)
+                        self.report({'INFO'}, f"Deleted Modifier group {str(i)}")
+                        with open(loc2,"w") as f2:
+                            json.dump(dict,f2,indent=4)
+    
+    def execute(self, context):
+        
+        #self.invoke(context)
+        self.delete_confirmmod()
+        
+        
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        
+        #webbrowser.open(link)
+        return context.window_manager.invoke_props_dialog(self)
+
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text=f"{ConfirmDelete.bookname}")
+        
         
 
     
@@ -482,19 +529,19 @@ class apply(bpy.types.Operator):
         
         obj = bpy.context.active_object
         
-        
-        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
-            with open(loc2,"r") as file:
-                    r = json.load(file)
-            if obj:
-                for i in r["modL"]:
-                    if str(i) == self.button_id:
-                        
-                        for j in i:
-                            base_name = j.split(".")[0]
-                            
-                            s = obj.modifiers.new(name=base_name,type = modifier_dict[base_name])
-                            
+        if bpy.context.scene.my_checkbox == False:
+            if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
+                with open(loc2,"r") as file:
+                        r = json.load(file)
+                if obj:
+                    for i in r["modL"]:
+                        if str(i) == self.button_id:
+
+                            for j in i:
+                                base_name = j.split(".")[0]
+
+                                s = obj.modifiers.new(name=base_name,type = modifier_dict[base_name])
+
             
 
 
@@ -517,7 +564,7 @@ class Delete(bpy.types.Operator):
     
 # Register both classes
 classes = [H,MyPopupOperator,AddBookmark,
-PopBookmark,MSG,OPEN_LINK,Modifier,apply,Delete,ConfirmDelete]
+PopBookmark,MSG,OPEN_LINK,Modifier,apply,Delete,ConfirmDelete,DeleteMod]
 
 def register():
     bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
