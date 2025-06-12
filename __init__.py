@@ -16,6 +16,7 @@ from bpy.types import Menu
 
 
 Delete_Toggle = False
+Tooltip = ''
 
 bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
     name="Delete Toggle",
@@ -25,6 +26,9 @@ bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
 
 
 def update_checkbox(self, context):
+    
+    """Enable to delete bookmarks or modifier groups by clicking them."""
+    
     global Delete_Toggle
     if context.scene.my_checkbox:
         # Switch to Edit Mode if checkbox is ticked
@@ -90,6 +94,7 @@ class H(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_category = 'Do it'
     link = "http://www.blender.org"
+    bl_description = "This button does something cool!"
     
     
     def readfile(f):
@@ -109,22 +114,25 @@ class H(bpy.types.Panel):
         
         
         b = layout.box()
-        b.label(text = "Online",icon  = "NONE")
-        
-        col = layout.column()
         
         
-        op = b.operator('wm.url_open', text="blender.org")
-        op.url = H.link
+        col = b.column()
+        row = b.row()
         
         
-        b.operator("wm.my_popup", text="Google!")
+        op = row.operator('open.link', text="blender.org", icon = "BLENDER", ).button_id = "blender.org"
         
-        c = layout.box()
-        c.label(text="Your Bookmarks",icon  = "BLENDER")
+        #,emboss=True, depress=False
         
-        row = layout.row()
-        col = layout.column()
+        
+        row.operator("wm.my_popup", text="Google!",icon = "COLOR_GREEN")
+        
+        features = layout.box()
+        
+        c = features.box()
+        c.label(text="Your Bookmarks",icon  = "FILE")
+        
+        
         
         row.scale_y = 2
         row.scale_x = 0.5
@@ -137,7 +145,13 @@ class H(bpy.types.Panel):
         #    spl = i.split(',')
         #    c.operator("open.link", text=f"{spl[0]}",icon='WORLD').button_id = spl[0]
         
-        c.operator("my_popup.bookmark",text= "+Bookmark")
+        
+        row2 = c.row()
+        col2 = c.column()
+        row2.operator("my_popup.bookmark",text= "+Bookmark",icon = "ADD")
+        row2.scale_x = .2
+        row2.scale_y = 2
+        #c.alert = True
         
         
         
@@ -151,16 +165,20 @@ class H(bpy.types.Panel):
                             #if bpy.context.scene.my_checkbox == False:
                             if context.scene.my_checkbox:
                             # Delete mode: create button to trigger ConfirmDelete
-                                c.operator("confirm.delete", text=str(i[0]), icon="WORLD").button_id = str(i[0])
+                                c.operator("confirm.delete", text=str(i[0]), icon="URL").button_id = str(i[0])
                             else:
                             # Normal mode: open link
-                                c.operator("open.link", text=str(i[0]), icon="WORLD").button_id = str(i[0])
+                                c.operator("open.link", text=str(i[0]), icon="URL").button_id = str(i[0])
                             
-        c.prop(context.scene, "my_checkbox")
+        
         #c.operator("show.msg", text="Delete TOggle")
         
         
-        new = layout.box()
+        new = features.box()
+        
+        #new.alert = True
+        #new.active = False
+        new.label(text="Your Modifier groups",icon  = "BLENDER")
         
         
         if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
@@ -170,16 +188,19 @@ class H(bpy.types.Panel):
                     if red:
                         
                         for i in red["modL"]:
+                            label = " + ".join(i)  # Join modifier names with ' + '
                             if context.scene.my_checkbox:
-                                new.operator("delete.mod",text =str(i)).button_id = str(i)
+                                new.operator("delete.mod",text =label,icon = "MODIFIER").button_id = str(i)
                             else:
-                                new.operator("modifier.apply",text =str(i)).button_id = str(i)
+                                new.operator("modifier.apply",text =label,icon = "MODIFIER").button_id = str(i)
                         
         
         
         
+        col3 = new.column()
+        col3.operator("modifier.pack",text = "RECORD MODIFIERS")
         
-        new.operator("modifier.pack",text = "RECORD MODIFIER PACK")
+        features.prop(context.scene, "my_checkbox")
 
 class OPEN_LINK(bpy.types.Operator):
     """ Opens this bookmark link in your default browser!"""
@@ -187,6 +208,8 @@ class OPEN_LINK(bpy.types.Operator):
     bl_label = "----links----" 
     button_id: bpy.props.StringProperty(name="Button ID") 
     global gMessage
+    bl_description = "Opens this bookmark link in your default browser!"
+    global Tooltip
         
     def execute(self, context):
         
@@ -217,6 +240,10 @@ class OPEN_LINK(bpy.types.Operator):
         else:
             #bpy.ops.confirm.delete()
             return {'FINISHED'}
+        
+        if self.button_id == 'blender.org':
+            OPEN_LINK.bl_description = "This takes you to the Blender website!"
+            webbrowser.open_new_tab('https://www.blender.org/')
             
                 
         
@@ -236,7 +263,7 @@ class MSG(bpy.types.Operator):
         
 class MyPopupOperator(bpy.types.Operator):
     bl_idname = "wm.my_popup"
-    bl_label = "Make a Google search!"
+    bl_label = "Make a Google search222!"
 
     my_string: bpy.props.StringProperty(name="Search here")
     my_toggle: bpy.props.BoolProperty(name="nvm")
@@ -281,12 +308,12 @@ class AddBookmark(bpy.types.Operator):
 
 class PopBookmark(bpy.types.Operator):
     bl_idname = "my_popup.bookmark"
-    bl_label = "type in the link!"
+    bl_label = "Add your Bookmark details!"
 
-    my_string: bpy.props.StringProperty(name="Type link")
+    my_string: bpy.props.StringProperty(name="Type Link")
     my_toggle: bpy.props.BoolProperty(name="add")
     
-    name: bpy.props.StringProperty(name="type name")
+    name: bpy.props.StringProperty(name="Type Name")
     
     
     #--------Add to external file
@@ -339,7 +366,7 @@ class PopBookmark(bpy.types.Operator):
         
         layout.prop(self, "name")
         
-        layout.prop(self, "my_toggle")
+        #layout.prop(self, "my_toggle")
         
         
         
@@ -499,32 +526,62 @@ class apply(bpy.types.Operator):
     
     def execute(self, context):
         modifier_dict = {
-    "Subdivision": "SUBSURF",
-    "Bevel": "BEVEL",
-    "Mirror": "MIRROR",
-    "Solidify": "SOLIDIFY",
+    "Armature": "ARMATURE",
     "Array": "ARRAY",
+    "Bevel": "BEVEL",
     "Boolean": "BOOLEAN",
+    "Build": "BUILD",
+    "Cast": "CAST",
+    "Cloth": "CLOTH",
+    "Collision": "COLLISION",
+    "CorrectiveSmooth": "CORRECTIVE_SMOOTH",
+    "Curve": "CURVE",
+    "DataTransfer": "DATA_TRANSFER",
+    "Decimate": "DECIMATE",
     "Displace": "DISPLACE",
+    "DynamicPaint": "DYNAMIC_PAINT",
+    "EdgeSplit": "EDGE_SPLIT",
+    "Explode": "EXPLODE",
+    "Fluid": "FLUID",
+    "GeometryNodes": "NODES",
+    "Hook": "HOOK",
+    "Lattice": "LATTICE",
+    "LaplacianDeform": "LAPLACIANDEFORM",
+    "LaplacianSmooth": "LAPLACIANSMOOTH",
+    "Mask": "MASK",
+    "MeshCache": "MESH_CACHE",
+    "MeshDeform": "MESH_DEFORM",
+    "MeshSequenceCache": "MESH_SEQUENCE_CACHE",
+    "MeshToVolume": "MESH_TO_VOLUME",
+    "Mirror": "MIRROR",
+    "Multiresolution": "MULTIRES",
+    "NormalEdit": "NORMAL_EDIT",
+    "Ocean": "OCEAN",
+    "ParticleInstance": "PARTICLE_INSTANCE",
+    "ParticleSystem": "PARTICLE_SYSTEM",
+    "Remesh": "REMESH",
+    "Screw": "SCREW",
     "Shrinkwrap": "SHRINKWRAP",
     "SimpleDeform": "SIMPLE_DEFORM",
-    "Lattice": "LATTICE",
-    "Cast": "CAST",
-    "Wave": "WAVE",
-    "Build": "BUILD",
-    "Decimate": "DECIMATE",
-    "EdgeSplit": "EDGE_SPLIT",
     "Skin": "SKIN",
+    "Smooth": "SMOOTH",
+    "SoftBody": "SOFT_BODY",
+    "Solidify": "SOLIDIFY",
+    "Subdivision": "SUBSURF",
+    "Surface": "SURFACE",
+    "SurfaceDeform": "SURFACE_DEFORM",
     "Triangulate": "TRIANGULATE",
+    "UVProject": "UV_PROJECT",
+    "UVWarp": "UV_WARP",
+    "VertexWeightEdit": "VERTEX_WEIGHT_EDIT",
+    "VertexWeightMix": "VERTEX_WEIGHT_MIX",
+    "VertexWeightProximity": "WEIGHT_PROXIMITY",
+    "VolumeDisplace": "VOLUME_DISPLACE",
+    "VolumeToMesh": "VOLUME_TO_MESH",
+    "Wave": "WAVE",
+    "WeightedNormal": "WEIGHTED_NORMAL",
     "Weld": "WELD",
-    "Remesh": "REMESH",
-    "Multiresolution": "MULTIRES",
-    "Screw": "SCREW",
-    "MeshSequenceCache": "MESH_SEQUENCE_CACHE",
-    "DataTransfer": "DATA_TRANSFER",
-    "NormalEdit": "NORMAL_EDIT",
-    "WeightProximity": "WEIGHT_PROXIMITY",
-    "VertexWeightEdit": "VERTEX_WEIGHT_EDIT"
+    "Wireframe": "WIREFRAME"
 }
         
         obj = bpy.context.active_object
@@ -569,7 +626,7 @@ PopBookmark,MSG,OPEN_LINK,Modifier,apply,Delete,ConfirmDelete,DeleteMod]
 def register():
     bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
         name="Delete Toggle",
-        description="Toggle to enter Delete mod",
+        description="Enable to delete bookmarks or modifier groups by clicking them.",
         default=False,
         update=update_checkbox
     )
