@@ -1,11 +1,13 @@
 bl_info = {
-    "name": "H",
-    "author": "Hari",
+    "name": "QuickMarks",
+    "author": "Harinarayanan P V",
     "version": (1, 0),
     "blender": (3, 0, 0),
-    "location": "Properties > Scene > Add Named Cube",
-    "description": "you can do Everything here",
-    "category": "Custom",
+    "location": "3D Viewport > Sidebar > QuickMarks",
+    "description": "Quickly save and restore bookmarks of websites and modifiers in Blender.",
+    "category": "3D View",
+    "doc_url": "https://github.com/hAry-y/QuickMarks",
+    "tracker_url" : "https://github.com/hAry-y/QuickMarks"
 }
 
 import bpy
@@ -86,64 +88,57 @@ gMessage = 'Success'
 L = []
 modi = []
 
-class H(bpy.types.Panel):
+
+class H2(bpy.types.Panel):
     """ open link"""
-    bl_label = "TOOLS"
-    bl_idname = "VIEW3D_PT_again_and_again1"
+    bl_label = "search"
+    bl_idname = "VIEW3D_PT_online"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'Do it'
+    bl_category = 'QuickMarks'
     link = "http://www.blender.org"
     bl_description = "This button does something cool!"
+    bl_order = -1
     
-    
-    def readfile(f):
-        list1 = []
-        with open(f,'r') as file:
-            for line in file:
-                list1.append(line)
-        
-        return list1
-
     def draw(self, context):
         
-        
-        
-        
         layout = self.layout
-        
-        
         b = layout.box()
-        
-        
         col = b.column()
         row = b.row()
         
-        
-        op = row.operator('open.link', text="blender.org", icon = "BLENDER", ).button_id = "blender.org"
-        
-        #,emboss=True, depress=False
-        
-        
         row.operator("wm.my_popup", text="Google!",icon = "COLOR_GREEN")
+        
+        op = row.operator('wm.url_open', text="blender.org", icon = "BLENDER", )
+        op.url = H.link
+        
+        row.scale_y = 2
+        row.scale_x = 0.5
+    
+class H3(bpy.types.Panel):
+    
+    bl_label = "Bookmarks"
+    bl_idname = "VIEW3D_PT_bookmarks"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'QuickMarks'
+    link = "http://www.blender.org"
+    bl_description = "This button does something cool!"
+    bl_order = 0
+    
+
+    def draw(self, context):
+        
+        layout = self.layout
+        
         
         features = layout.box()
         
         c = features.box()
         c.label(text="Your Bookmarks",icon  = "FILE")
         
-        
-        
-        row.scale_y = 2
-        row.scale_x = 0.5
-        
-        #c.operator("show.msg")
-        
         global loc
-        #o = H.readfile(loc)
-        #for i in o:
-        #    spl = i.split(',')
-        #    c.operator("open.link", text=f"{spl[0]}",icon='WORLD').button_id = spl[0]
+
         
         
         row2 = c.row()
@@ -174,7 +169,32 @@ class H(bpy.types.Panel):
         #c.operator("show.msg", text="Delete TOggle")
         
         
-        new = features.box()
+
+
+        
+
+class H(bpy.types.Panel):
+    
+    bl_label = "Modifier Groups"
+    bl_idname = "VIEW3D_PT_Bookmarks"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'QuickMarks'
+    link = "http://www.blender.org"
+    bl_description = "This button does something cool!"
+    bl_order = 0
+    
+    
+    
+
+    def draw(self, context):
+        
+        layout = self.layout
+        
+        
+        
+        s = layout.box()
+        new = s.box()
         
         #new.alert = True
         #new.active = False
@@ -195,21 +215,41 @@ class H(bpy.types.Panel):
                                 new.operator("modifier.apply",text =label,icon = "MODIFIER").button_id = str(i)
                         
         
-        
-        
         col3 = new.column()
-        col3.operator("modifier.pack",text = "RECORD MODIFIERS")
+        col3.operator("modifier.pack",text = "Copy Modifier Group")
         
-        features.prop(context.scene, "my_checkbox")
+        
+
+class H4(bpy.types.Panel):
+    
+    bl_label = "Delete Mode"
+    bl_idname = "VIEW3D_PT_DeleteToggle"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'QuickMarks'
+    link = "http://www.blender.org"
+    bl_description = "This button does something cool!"
+    bl_order = 100
+    
+    
+    
+
+    def draw(self, context):
+        
+        layout = self.layout
+        
+        layout.prop(context.scene, "my_checkbox")
 
 class OPEN_LINK(bpy.types.Operator):
+    
+    global Tooltip
     """ Opens this bookmark link in your default browser!"""
     bl_idname = "open.link"
     bl_label = "----links----" 
     button_id: bpy.props.StringProperty(name="Button ID") 
     global gMessage
     bl_description = "Opens this bookmark link in your default browser!"
-    global Tooltip
+    
         
     def execute(self, context):
         
@@ -262,18 +302,21 @@ class MSG(bpy.types.Operator):
         return {'FINISHED'}
         
 class MyPopupOperator(bpy.types.Operator):
+    
+    """Opens a google search on your default browser!"""
+    
     bl_idname = "wm.my_popup"
-    bl_label = "Make a Google search222!"
+    bl_label = "Make a Google search!"
 
     my_string: bpy.props.StringProperty(name="Search here")
-    my_toggle: bpy.props.BoolProperty(name="nvm")
+    
     
     
         
     
     def execute(self, context):
         global global_search
-        self.report({'INFO'}, f"You typed: {self.my_string}, Checked: {self.my_toggle}")
+        self.report({'INFO'}, f"Searching: {self.my_string}")
         
         link = "https://www.google.com/search?q="+self.my_string.replace(" ","+")
         webbrowser.open(link)
@@ -291,7 +334,7 @@ class MyPopupOperator(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "my_string")
-        layout.prop(self, "my_toggle")
+        #layout.prop(self, "my_toggle")
         
 
         
@@ -307,6 +350,9 @@ class AddBookmark(bpy.types.Operator):
     
 
 class PopBookmark(bpy.types.Operator):
+    """ Add a custom Bookmark with any name and link to open the bookmark!"""
+
+    
     bl_idname = "my_popup.bookmark"
     bl_label = "Add your Bookmark details!"
 
@@ -470,6 +516,8 @@ class DeleteMod(bpy.types.Operator):
 
     
 class Modifier(bpy.types.Operator):
+    """ Save the current modifier stack as a bookmark for quick access later."""
+    
     bl_idname = "modifier.pack"
     bl_label = "modifier"
     
@@ -620,12 +668,12 @@ class Delete(bpy.types.Operator):
     
     
 # Register both classes
-classes = [H,MyPopupOperator,AddBookmark,
+classes = [H2,H3,H,H4,MyPopupOperator,AddBookmark,
 PopBookmark,MSG,OPEN_LINK,Modifier,apply,Delete,ConfirmDelete,DeleteMod]
 
 def register():
     bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
-        name="Delete Toggle",
+        name="Enable Delete Mode",
         description="Enable to delete bookmarks or modifier groups by clicking them.",
         default=False,
         update=update_checkbox
