@@ -198,9 +198,14 @@ class H(bpy.types.Panel):
         
         #new.alert = True
         #new.active = False
-        new.label(text="Your Modifier groups",icon  = "BLENDER")
+        new.label(text="Your Modifier groups",icon  = "FILE")
         
+        col3 = new.row()
+        col3.operator("modifier.pack",text = "+Modifier Group",icon = "ADD")
         
+        col3.scale_y = 2
+        
+        rr = new.column()
         if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
             with open(loc2,"r") as file:
                     red = json.load(file)
@@ -210,13 +215,12 @@ class H(bpy.types.Panel):
                         for i in red["modL"]:
                             label = " + ".join(i)  # Join modifier names with ' + '
                             if context.scene.my_checkbox:
-                                new.operator("delete.mod",text =label,icon = "MODIFIER").button_id = str(i)
+                                rr.operator("delete.mod",text =label,icon = "MODIFIER").button_id = str(i)
                             else:
-                                new.operator("modifier.apply",text =label,icon = "MODIFIER").button_id = str(i)
+                                rr.operator("modifier.apply",text =label,icon = "MODIFIER").button_id = str(i)
                         
         
-        col3 = new.column()
-        col3.operator("modifier.pack",text = "Copy Modifier Group")
+        
         
         
 
