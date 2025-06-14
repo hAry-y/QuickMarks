@@ -486,7 +486,7 @@ class DeleteMod(bpy.types.Operator):
     
     bookname = 'Confirm Delete This Modifier group?'
     
-    confirm: bpy.props.BoolProperty(name="Confirm delete this Modifier")
+    confirm:bpy.props.BoolProperty(name="")
 
     def delete_confirmmod(self):
         
