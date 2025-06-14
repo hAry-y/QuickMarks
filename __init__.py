@@ -142,13 +142,13 @@ class H3(bpy.types.Panel):
         
         
         row2 = c.row()
-        col2 = c.column()
+        
         row2.operator("my_popup.bookmark",text= "+Bookmark",icon = "ADD")
-        row2.scale_x = .2
+        
         row2.scale_y = 2
         #c.alert = True
         
-        
+        cc = c.column()
         
         if os.path.exists(loc) and os.path.getsize(loc) > 0:
             with open(loc,"r") as file:
@@ -160,10 +160,10 @@ class H3(bpy.types.Panel):
                             #if bpy.context.scene.my_checkbox == False:
                             if context.scene.my_checkbox:
                             # Delete mode: create button to trigger ConfirmDelete
-                                c.operator("confirm.delete", text=str(i[0]), icon="URL").button_id = str(i[0])
+                                cc.operator("confirm.delete", text=str(i[0]), icon="URL").button_id = str(i[0])
                             else:
                             # Normal mode: open link
-                                c.operator("open.link", text=str(i[0]), icon="URL").button_id = str(i[0])
+                                cc.operator("open.link", text=str(i[0]), icon="URL").button_id = str(i[0])
                             
         
         #c.operator("show.msg", text="Delete TOggle")
@@ -361,7 +361,6 @@ class PopBookmark(bpy.types.Operator):
     bl_label = "Add your Bookmark details!"
 
     my_string: bpy.props.StringProperty(name="Type Link")
-    my_toggle: bpy.props.BoolProperty(name="add")
     
     name: bpy.props.StringProperty(name="Type Name")
     
@@ -380,23 +379,29 @@ class PopBookmark(bpy.types.Operator):
         global loc
         
         if os.path.exists(loc) and os.path.getsize(loc) > 0:
-            with open(loc, "r") as f:
-                duct = json.load(f)
-                duct["bookL"].append(lwist)
-            with open(loc,"w") as f2:
-                json.dump(duct,f2,indent=4)
-                
+            if lwist[1] != "":
+                if lwist[0] == "":
+                    lwist = [N,N]
+                with open(loc, "r") as f:
+                    duct = json.load(f)
+                    duct["bookL"].append(lwist)
+                with open(loc,"w") as f2:
+                    json.dump(duct,f2,indent=4)
+            else:
+                self.report({'INFO'}, "Can't Save a Bookmark without a link!")
+
         else:
             with open(loc, "w") as f:
                 bd["bookL"].append(lwist)
                 json.dump(bd,f,indent=4)
         
-        self.report({'INFO'}, f"Bookmark Saved! {B}")
+        if lwist[1] != "":
+            self.report({'INFO'}, f"Bookmark Saved! {B}")
             
             
 
     def execute(self, context):
-        self.report({'INFO'}, f"You Added- : {self.my_string}, Checked: {self.my_toggle}")
+        self.report({'INFO'}, f"You Added- : {self.my_string}")
         
         links = self.my_string
         add = self.name
