@@ -1,5 +1,4 @@
-- **Search Panel** ![Search Icon](BANNER.jpg): Quick access to Google search and Blender.org.
-
+- **Search Panel** ![Search Icon](BANNER.jpg):
 
 # QuickMarks Addon for Blender
 
