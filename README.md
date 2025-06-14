@@ -1,4 +1,4 @@
-- **Search Panel** ![Search Icon](BANNER.jpg):
+- ![Search Icon](BANNER.jpg)
 
 # QuickMarks Addon for Blender
 
