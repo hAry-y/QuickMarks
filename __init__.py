@@ -4,7 +4,7 @@ bl_info = {
     "version": (1, 0),
     "blender": (3, 0, 0),
     "location": "3D Viewport > Sidebar > QuickMarks",
-    "description": "Quickly save and restore bookmarks of websites and modifiers in Blender.",
+    "description": "Quickly save and restore bookmarks of websites in Blender.",
     "category": "3D View",
     "doc_url": "https://github.com/hAry-y/QuickMarks",
     "tracker_url" : "https://github.com/hAry-y/QuickMarks"
@@ -48,7 +48,7 @@ def update_checkbox(self, context):
 
 #ADD FILE CHECKER
 loc = ''
-loc2=''
+
 
 #ADD KEYWORDS FILE
 addons_dir = bpy.utils.user_resource('SCRIPTS', path="addons")
@@ -60,25 +60,9 @@ else:
             json.dump([], f, indent=4)
             
     else:
-        pass
-
-
-#ADD MODIFIER FILE   
-if os.path.isfile(addons_dir+'\Modifiers.json'):
-    print("File exists!")
-else:
-    if os.path.exists(addons_dir+'\Modifiers.json') and os.path.getsize(addons_dir+'\Modifiers.json') > 0:
-        with open(addons_dir+"\Modifiers.json", "w") as f:
-            json.dump([], f, indent=4)
-            
-    else:
-        pass
-        
+        pass      
 
 loc = addons_dir+'\Bookmarks.json'  
-loc2 = addons_dir+'\Modifiers.json'  
-
-
 
 
 global_search = ''
@@ -110,10 +94,10 @@ class H2(bpy.types.Panel):
         row.operator("wm.my_popup", text="Google!",icon = "COLOR_GREEN")
         
         op = row.operator('wm.url_open', text="blender.org", icon = "BLENDER", )
-        op.url = H.link
+        op.url = H2.link
         
         row.scale_y = 2
-        row.scale_x = 0.5
+        row.scale_x = 2
     
 class H3(bpy.types.Panel):
     
@@ -167,60 +151,6 @@ class H3(bpy.types.Panel):
                             
         
         #c.operator("show.msg", text="Delete TOggle")
-        
-        
-
-
-        
-
-class H(bpy.types.Panel):
-    
-    bl_label = "Modifier Groups"
-    bl_idname = "VIEW3D_PT_Bookmarks"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'QuickMarks'
-    link = "http://www.blender.org"
-    bl_description = "This button does something cool!"
-    bl_order = 0
-    
-    
-    
-
-    def draw(self, context):
-        
-        layout = self.layout
-        
-        
-        
-        s = layout.box()
-        new = s.box()
-        
-        #new.alert = True
-        #new.active = False
-        new.label(text="Your Modifier groups",icon  = "FILE")
-        
-        col3 = new.row()
-        col3.operator("modifier.pack",text = "+Modifier Group",icon = "ADD")
-        
-        col3.scale_y = 2
-        
-        rr = new.column()
-        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
-            with open(loc2,"r") as file:
-                    red = json.load(file)
-
-                    if red:
-                        
-                        for i in red["modL"]:
-                            label = " + ".join(i)  # Join modifier names with ' + '
-                            if context.scene.my_checkbox:
-                                rr.operator("delete.mod",text =label,icon = "MODIFIER").button_id = str(i)
-                            else:
-                                rr.operator("modifier.apply",text =label,icon = "MODIFIER").button_id = str(i)
-                        
-        
-        
         
         
 
@@ -478,188 +408,6 @@ class ConfirmDelete(bpy.types.Operator):
         layout.label(text=f"{ConfirmDelete.bookname}")
         
 
-class DeleteMod(bpy.types.Operator):
-    
-    button_id: bpy.props.StringProperty(name="Button ID")
-    bl_idname = "delete.mod"
-    bl_label = "confirm delete modifier!"
-    
-    bookname = 'Confirm Delete This Modifier group?'
-    
-    confirm:bpy.props.BoolProperty(name="")
-
-    def delete_confirmmod(self):
-        
-        
-        global loc2,Delete_Toggle
-        if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
-            with open(loc2, "r") as f:
-                dict = json.load(f)
-                for i in dict['modL']:
-                    
-                    if str(i) == self.button_id:
-                        dict['modL'].remove(i)
-                        self.report({'INFO'}, f"Deleted Modifier group {str(i)}")
-                        with open(loc2,"w") as f2:
-                            json.dump(dict,f2,indent=4)
-    
-    def execute(self, context):
-        
-        #self.invoke(context)
-        self.delete_confirmmod()
-        
-        
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        
-        #webbrowser.open(link)
-        return context.window_manager.invoke_props_dialog(self)
-
-
-    def draw(self, context):
-        layout = self.layout
-        layout.label(text=f"{ConfirmDelete.bookname}")
-        
-        
-
-    
-class Modifier(bpy.types.Operator):
-    """ Save the current modifier stack as a bookmark for quick access later."""
-    
-    bl_idname = "modifier.pack"
-    bl_label = "modifier"
-    
-    global loc2
-    def execute(self, context):
-        result = ''
-        ml = []
-        
-        global modi, loc2
-        obj = bpy.context.active_object
-        if obj and obj.modifiers:
-            for mod in obj.modifiers:
-                
-                l1 = []
-                
-                dic = {"modL":[]}
-                result = str(mod).split('"')[1]
-                modi.append(result)
-                
-                
-                self.report({'INFO'}, f"{result}")
-                
-                base_name = result.split(".")[0]
-                
-                ml.append(base_name)
-                
-                
-                
-        if os.path.exists(loc2) and os.path.getsize(loc2) > 0 and ml:
-            with open(loc2, "r") as f:
-                dict = json.load(f)
-                dict["modL"].append(ml)
-            with open(loc2,"w") as f2:
-                json.dump(dict,f2,indent=4)
-                
-        else:
-            if ml:
-                with open(loc2, "w") as f:
-                    dict = {"modL":[ml]}
-                    json.dump(dict,f,indent=4)
-
-        
-            
-
-
-        return {'FINISHED'}
-    
-class apply(bpy.types.Operator):
-    global modi,loc2
-    bl_idname = "modifier.apply"
-    bl_label = "modifier"
-    button_id: bpy.props.StringProperty(name="Button ID")
-    
-    
-    def execute(self, context):
-        modifier_dict = {
-    "Armature": "ARMATURE",
-    "Array": "ARRAY",
-    "Bevel": "BEVEL",
-    "Boolean": "BOOLEAN",
-    "Build": "BUILD",
-    "Cast": "CAST",
-    "Cloth": "CLOTH",
-    "Collision": "COLLISION",
-    "CorrectiveSmooth": "CORRECTIVE_SMOOTH",
-    "Curve": "CURVE",
-    "DataTransfer": "DATA_TRANSFER",
-    "Decimate": "DECIMATE",
-    "Displace": "DISPLACE",
-    "DynamicPaint": "DYNAMIC_PAINT",
-    "EdgeSplit": "EDGE_SPLIT",
-    "Explode": "EXPLODE",
-    "Fluid": "FLUID",
-    "GeometryNodes": "NODES",
-    "Hook": "HOOK",
-    "Lattice": "LATTICE",
-    "LaplacianDeform": "LAPLACIANDEFORM",
-    "LaplacianSmooth": "LAPLACIANSMOOTH",
-    "Mask": "MASK",
-    "MeshCache": "MESH_CACHE",
-    "MeshDeform": "MESH_DEFORM",
-    "MeshSequenceCache": "MESH_SEQUENCE_CACHE",
-    "MeshToVolume": "MESH_TO_VOLUME",
-    "Mirror": "MIRROR",
-    "Multiresolution": "MULTIRES",
-    "NormalEdit": "NORMAL_EDIT",
-    "Ocean": "OCEAN",
-    "ParticleInstance": "PARTICLE_INSTANCE",
-    "ParticleSystem": "PARTICLE_SYSTEM",
-    "Remesh": "REMESH",
-    "Screw": "SCREW",
-    "Shrinkwrap": "SHRINKWRAP",
-    "SimpleDeform": "SIMPLE_DEFORM",
-    "Skin": "SKIN",
-    "Smooth": "SMOOTH",
-    "SoftBody": "SOFT_BODY",
-    "Solidify": "SOLIDIFY",
-    "Subdivision": "SUBSURF",
-    "Surface": "SURFACE",
-    "SurfaceDeform": "SURFACE_DEFORM",
-    "Triangulate": "TRIANGULATE",
-    "UVProject": "UV_PROJECT",
-    "UVWarp": "UV_WARP",
-    "VertexWeightEdit": "VERTEX_WEIGHT_EDIT",
-    "VertexWeightMix": "VERTEX_WEIGHT_MIX",
-    "VertexWeightProximity": "WEIGHT_PROXIMITY",
-    "VolumeDisplace": "VOLUME_DISPLACE",
-    "VolumeToMesh": "VOLUME_TO_MESH",
-    "Wave": "WAVE",
-    "WeightedNormal": "WEIGHTED_NORMAL",
-    "Weld": "WELD",
-    "Wireframe": "WIREFRAME"
-}
-        
-        obj = bpy.context.active_object
-        
-        if bpy.context.scene.my_checkbox == False:
-            if os.path.exists(loc2) and os.path.getsize(loc2) > 0:
-                with open(loc2,"r") as file:
-                        r = json.load(file)
-                if obj:
-                    for i in r["modL"]:
-                        if str(i) == self.button_id:
-
-                            for j in i:
-                                base_name = j.split(".")[0]
-
-                                s = obj.modifiers.new(name=base_name,type = modifier_dict[base_name])
-
-            
-
-
-        return {'FINISHED'}
     
     
 class Delete(bpy.types.Operator):
@@ -671,14 +419,12 @@ class Delete(bpy.types.Operator):
     
     def execute(self, context):
         gMessage = Delete_Toggle
-
-
         return {'FINISHED'}
     
     
 # Register both classes
-classes = [H2,H3,H,H4,MyPopupOperator,AddBookmark,
-PopBookmark,MSG,OPEN_LINK,Modifier,apply,Delete,ConfirmDelete,DeleteMod]
+classes = [H2,H3,H4,MyPopupOperator,AddBookmark,
+PopBookmark,MSG,OPEN_LINK,Delete,ConfirmDelete]
 
 def register():
     bpy.types.Scene.my_checkbox = bpy.props.BoolProperty(
