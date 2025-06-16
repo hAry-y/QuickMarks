@@ -1,5 +1,4 @@
-- **Search Panel** ![Search Icon](BANNER.png): Quick access to Google search and Blender.org.
-- **Bookmarks Panel** ![Bookmark Icon](icon600.png): Save and open custom web bookmarks.
+- ![Search Icon](BANNER.jpg)
 
 # QuickMarks Addon for Blender
 
