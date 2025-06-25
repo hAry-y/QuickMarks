@@ -93,8 +93,8 @@ class H2(bpy.types.Panel):
         
         row.operator("wm.my_popup", text="Google!",icon = "COLOR_GREEN")
         
-        op = row.operator('wm.url_open', text="blender.org", icon = "BLENDER", )
-        op.url = H2.link
+        #op = row.operator('wm.url_open', text="blender.org", icon = "BLENDER", )
+        #op.url = H2.link
         
         row.scale_y = 2
         row.scale_x = 2
@@ -151,28 +151,11 @@ class H3(bpy.types.Panel):
                             
         
         #c.operator("show.msg", text="Delete TOggle")
-        
-        
-
-class H4(bpy.types.Panel):
-    
-    bl_label = "Delete Mode"
-    bl_idname = "VIEW3D_PT_DeleteToggle"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'QuickMarks'
-    link = "http://www.blender.org"
-    bl_description = "This button does something cool!"
-    bl_order = 100
-    
-    
-    
-
-    def draw(self, context):
-        
-        layout = self.layout
-        
         layout.prop(context.scene, "my_checkbox")
+        
+        
+
+
 
 class OPEN_LINK(bpy.types.Operator):
     
@@ -337,6 +320,8 @@ class PopBookmark(bpy.types.Operator):
         add = self.name
         PopBookmark.add_bookmark(add,links, self)
         
+        self.my_string = ''
+        self.name = ''
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -423,7 +408,7 @@ class Delete(bpy.types.Operator):
     
     
 # Register both classes
-classes = [H2,H3,H4,MyPopupOperator,AddBookmark,
+classes = [H2,H3,MyPopupOperator,AddBookmark,
 PopBookmark,MSG,OPEN_LINK,Delete,ConfirmDelete]
 
 def register():
