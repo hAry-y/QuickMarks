@@ -1,9 +1,9 @@
-- ![Search Icon](BANNER.jpg)
+
 
 # QuickMarks Addon for Blender
 
 ## Overview
-QuickMarks is a Blender addon that allows users to save and manage web bookmarks and modifier groups within the 3D Viewport. It provides quick access to favorite websites, modifier stacks, and a Google search feature, with a dedicated delete mode toggle.
+QuickMarks is a Blender addon that allows users to save and manage web bookmarks within the 3D Viewport. It provides quick access to favorite websites and a Google search feature, with a dedicated delete mode toggle.
 
 ## Installation
 1. Download the addon ZIP file from [GitHub](https://github.com/hAry-y/QuickMarks).
@@ -14,8 +14,7 @@ QuickMarks is a Blender addon that allows users to save and manage web bookmarks
 ## Features
 - **Search Panel**: Quick access to Google search and Blender.org.
 - **Bookmarks Panel**: Save and open custom web bookmarks.
-- **Modifier Groups Panel**: Save and apply modifier stacks to objects.
-- **Delete Mode Panel**: Toggle to enable deletion of bookmarks or modifier groups.
+- **Delete Mode Panel**: Toggle to enable deletion of bookmarks.
 - **Interface**: Located in the 3D Viewport Sidebar under the "QuickMarks" tab.
 
 ## Usage
@@ -28,11 +27,7 @@ QuickMarks is a Blender addon that allows users to save and manage web bookmarks
    - Click `+Bookmark` to add a name and URL.
    - Click a bookmark to open it in your browser.
    - Enable "Enable Delete Mode" to remove bookmarks by clicking.
-4. **Modifier Groups Panel**:
-   - Select an object and click `+Modifier Group` to save its modifier stack.
-   - Click a modifier group to apply it to the active object.
-   - Enable "Enable Delete Mode" to delete modifier groups.
-5. **Delete Mode Panel**:
+4. **Delete Mode Panel**:
    - Toggle "Enable Delete Mode" to switch to deletion mode for bookmarks and modifier groups.
 
 
