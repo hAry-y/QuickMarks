@@ -14,7 +14,9 @@ import bpy
 import json
 import webbrowser
 import os
-from bpy.types import Menu
+
+
+from datetime import datetime
 
 
 Delete_Toggle = False
@@ -116,9 +118,9 @@ class H3(bpy.types.Panel):
         layout = self.layout
         
         
-        features = layout.box()
+        c = layout.box()
         
-        c = features.box()
+        
         c.label(text="Your Bookmarks",icon  = "FILE")
         
         global loc
@@ -132,7 +134,7 @@ class H3(bpy.types.Panel):
         row2.scale_y = 2
         #c.alert = True
         
-        cc = c.column()
+        
         
         if os.path.exists(loc) and os.path.getsize(loc) > 0:
             with open(loc,"r") as file:
@@ -143,19 +145,43 @@ class H3(bpy.types.Panel):
                         for i in red["bookL"]:
                             #if bpy.context.scene.my_checkbox == False:
                             if context.scene.my_checkbox:
+                                if i[2]:
                             # Delete mode: create button to trigger ConfirmDelete
-                                cc.operator("confirm.delete", text=str(i[0]), icon="URL").button_id = str(i[0])
+                                    c.operator("confirm.delete", text=str(i[0]), icon="FREEZE").button_id = str(i[0])
+                                else:
+                                    c.operator("confirm.delete", text=str(i[0]), icon="URL").button_id = str(i[0])
                             else:
+                                if i[2]:
+                                    c.operator("open.link", text=str(i[0]), icon="FREEZE").button_id = str(i[0])
                             # Normal mode: open link
-                                cc.operator("open.link", text=str(i[0]), icon="URL").button_id = str(i[0])
+                                else:
+                                    c.operator("open.link", text=str(i[0]), icon="URL").button_id = str(i[0])
                             
         
         #c.operator("show.msg", text="Delete TOggle")
         layout.prop(context.scene, "my_checkbox")
         
+class support(bpy.types.Panel):
+    
+    bl_label = "Support creator"
+    bl_idname = "VIEW3D_PT_support"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'QuickMarks'
+    bl_description = "show some love through donations!"
+    bl_order = 0
+    
+    def draw(self, context):
+        layout = self.layout
+        #layout.label = "support <3"
+        c = layout.box()
+        c.label(text="Show some love ♡",icon="RIGHTARROW")
         
-
-
+        row = c.row()
+        
+        row.operator("open.link", text="Paypal").button_id = "coffee"
+        row.operator("open.link", text="Razorpay").button_id = "razor"
+        
 
 class OPEN_LINK(bpy.types.Operator):
     
@@ -171,6 +197,10 @@ class OPEN_LINK(bpy.types.Operator):
     def execute(self, context):
         
         global Delete_Toggle, loc
+        if self.button_id == 'coffee':
+            webbrowser.open_new_tab('https://buymeacoffee.com/hary.y')
+        if self.button_id == 'razor':
+            webbrowser.open_new_tab('https://razorpay.me/@hary-y')
         
         if bpy.context.scene.my_checkbox == False:
             global loc
@@ -262,7 +292,6 @@ class AddBookmark(bpy.types.Operator):
     
     def execute(self, context):
         self.report({'INFO'}, "OPEN CHROME!")
-        print("You can start coding your function here.")
         return {'FINISHED'}
     
 
@@ -277,14 +306,16 @@ class PopBookmark(bpy.types.Operator):
     
     name: bpy.props.StringProperty(name="Type Name")
     
+    my_toggle: bpy.props.BoolProperty(name="favorite")
+    
     
     #--------Add to external file
-    def add_bookmark(B,N,self):
+    def add_bookmark(B,N,Fa,self):
         
         global loc,Delete_Toggle
         
         
-        lwist = [B,N]
+        lwist = [B,N,Fa]
         bd = {"bookL":[]}
         
         
@@ -294,10 +325,14 @@ class PopBookmark(bpy.types.Operator):
         if os.path.exists(loc) and os.path.getsize(loc) > 0:
             if lwist[1] != "":
                 if lwist[0] == "":
-                    lwist = [N,N]
+                    lwist = [N,N,Fa]
                 with open(loc, "r") as f:
                     duct = json.load(f)
-                    duct["bookL"].append(lwist)
+                    
+                    if lwist[2]:
+                        duct["bookL"].insert(0,lwist)
+                    else:
+                        duct["bookL"].append(lwist)
                 with open(loc,"w") as f2:
                     json.dump(duct,f2,indent=4)
             else:
@@ -318,7 +353,8 @@ class PopBookmark(bpy.types.Operator):
         
         links = self.my_string
         add = self.name
-        PopBookmark.add_bookmark(add,links, self)
+        Fa = self.my_toggle
+        PopBookmark.add_bookmark(add,links,Fa,self)
         
         self.my_string = ''
         self.name = ''
@@ -336,7 +372,7 @@ class PopBookmark(bpy.types.Operator):
         
         layout.prop(self, "name")
         
-        #layout.prop(self, "my_toggle")
+        layout.prop(self, "my_toggle")
         
         
         
@@ -390,7 +426,7 @@ class ConfirmDelete(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.label(text=f"{ConfirmDelete.bookname}")
+        
         
 
     
@@ -408,7 +444,7 @@ class Delete(bpy.types.Operator):
     
     
 # Register both classes
-classes = [H2,H3,MyPopupOperator,AddBookmark,
+classes = [H2,H3,support,MyPopupOperator,AddBookmark,
 PopBookmark,MSG,OPEN_LINK,Delete,ConfirmDelete]
 
 def register():
@@ -418,6 +454,11 @@ def register():
         default=False,
         update=update_checkbox
     )
+    bpy.types.Scene.my_int_slider = bpy.props.IntProperty(
+        name="Minutes",
+        default=0,
+        min=0,
+        max=1440)
     for cls in classes:
         bpy.utils.register_class(cls)
     #bpy.types.Scene.text_input_props = bpy.props.PointerProperty(type=TextInputProperties)
